@@ -55,37 +55,49 @@ app.layout = html.Div([
                     'padding-top' : 0,
                     'padding-right' : 0
                 }),
+    dcc.Slider(
+        id='radon--slider',
+        min=0,
+        max=179,
+        value=0,
+        step=1
+    ),
     dcc.Graph(id='radon-transform',
-        figure={
-            'data': [
-                go.Scatter(
-                    x=[0, 1447],
-                    y=[0, 179]
-                )
-            ],
-            'layout': go.Layout(
-                xaxis={
-                    'title': 'Pixel values'
-                },
-                yaxis={
-                    'title': 'Angle'
-                },
-                margin = dict(l=40, r=0, t=40, b=30),
-                images=[dict(
-                    source=file_name,
-                    xref= "x",
-                    yref= "y",
-                    x= 0,
-                    y= 180,
-                    sizex= 1448,
-                    sizey= 180,
-                    sizing= "stretch",
-                    opacity= 0.7,
-                    visible = True,
-                    layer= "below")],
-                template="plotly_white"
-            )
-        },
+        # figure={
+        #     'data': [
+        #         go.Scatter(
+        #             x=(0, 1447),
+        #             y=(0, 179),
+        #             mode='markers'
+        #         )
+        #     ],
+        #     'layout': go.Layout(
+        #         xaxis={
+        #             'title': 'Pixel values',
+        #             'showgrid': False,
+        #             'zeroline': False
+        #         },
+        #         yaxis={
+        #             'title': 'Angle',
+        #             'showgrid': False,
+        #             'zeroline': False
+        #         },
+        #         margin = dict(l=40, r=0, t=40, b=30),
+        #         images=[dict(
+        #             source=file_name,
+        #             xref= "x",
+        #             yref= "y",
+        #             x= 0,
+        #             y= 180,
+        #             sizex= 1448,
+        #             sizey= 180,
+        #             sizing= "stretch",
+        #             opacity= 1.0,
+        #             visible = True,
+        #             layer= "below")],
+        #         template="plotly_white"
+        #     )
+        # },
 
     ),
 
@@ -101,32 +113,71 @@ app.layout = html.Div([
     html.Div(id='slider-output-container')
 ])
 
-# Display radon transform
-# @app.callback(
-#     Output('radon-transform', 'figure'),
-#     [Input('angle--slider', 'value')]
-# )
-# def display_radon_transform(value):
-#
-#     x_rt = sinogram.shape[1];
-#
-#     return {
-#         # 'data': [
-#         #     go.layout.Shape(
-#         #         type="line",
-#         #         x0=0,
-#         #         y0=179-value,
-#         #         x1=x_rt-1,
-#         #         y1=179-value,
-#         #         line=dict(
-#         #             color="MediumPurple",
-#         #             width=4,
-#         #             dash="dot")
-#         #     )
-#         # ],
-#
-#
-#     }
+# Add new trace line
+@app.callback(
+    Output('radon-transform', 'figure'),
+    [Input('radon--slider', 'value')],
+)
+def update_trace_radon_transform(value):
+
+    return {
+        'data': [
+            go.Scatter(
+                x=(0, 1447),
+                y=(0, 179),
+                mode="markers",
+                showlegend=False,
+
+            ),
+            go.Scatter(
+                x=[20],
+                y=[179-value],
+                name="Angle:{}".format(value),
+                mode="text"
+            )
+
+        ],
+        'layout': go.Layout(
+            xaxis={
+                'title': 'Pixel values',
+                'showgrid': False,
+                'zeroline': False
+            },
+            yaxis={
+                'title': 'Angle',
+                'showgrid': False,
+                'zeroline': False
+            },
+            margin = dict(l=40, r=0, t=40, b=30),
+            images=[dict(
+                source=file_name,
+                xref= "x",
+                yref= "y",
+                x= 0,
+                y= 180,
+                sizex= 1448,
+                sizey= 180,
+                sizing= "stretch",
+                opacity= 1.0,
+                visible = True,
+                layer= "below")],
+            template="plotly_white",
+            shapes=[dict(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=0,
+                y0=179-value,
+                x1=1447,
+                y1=179-value,
+                line=dict(
+                    color="LightSeaGreen",
+                    width=3,
+                    )
+            )]
+        )
+    }
+
 
 # Display angle values
 @app.callback(
