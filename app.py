@@ -44,6 +44,17 @@ for i in range(len(theta)-1):
 
 # Create app layout
 app.layout = html.Div([
+    html.H1(
+        children='Radon Transform Visualisation',
+        style={
+            'textAlign': 'center'}
+    ),
+
+    html.Div(
+        children='A web application for visualising radon transform.',
+        style={
+            'textAlign': 'center'}
+    ),
 
     html.Img(
         src=args["input"],
@@ -62,44 +73,7 @@ app.layout = html.Div([
         value=0,
         step=1
     ),
-    dcc.Graph(id='radon-transform',
-        # figure={
-        #     'data': [
-        #         go.Scatter(
-        #             x=(0, 1447),
-        #             y=(0, 179),
-        #             mode='markers'
-        #         )
-        #     ],
-        #     'layout': go.Layout(
-        #         xaxis={
-        #             'title': 'Pixel values',
-        #             'showgrid': False,
-        #             'zeroline': False
-        #         },
-        #         yaxis={
-        #             'title': 'Angle',
-        #             'showgrid': False,
-        #             'zeroline': False
-        #         },
-        #         margin = dict(l=40, r=0, t=40, b=30),
-        #         images=[dict(
-        #             source=file_name,
-        #             xref= "x",
-        #             yref= "y",
-        #             x= 0,
-        #             y= 180,
-        #             sizex= 1448,
-        #             sizey= 180,
-        #             sizing= "stretch",
-        #             opacity= 1.0,
-        #             visible = True,
-        #             layer= "below")],
-        #         template="plotly_white"
-        #     )
-        # },
-
-    ),
+    dcc.Graph(id='radon-transform'),
 
     dcc.Graph(id='radon-transform-angle-view'),
 
@@ -148,7 +122,7 @@ def update_trace_radon_transform(value):
                 'showgrid': False,
                 'zeroline': False
             },
-            margin = dict(l=40, r=0, t=40, b=30),
+            margin = dict(l=40, r=10, t=10, b=40),
             images=[dict(
                 source=file_name,
                 xref= "x",
@@ -209,7 +183,8 @@ def update_graph(value):
             },
             yaxis={
                 'title': 'Pixel values'
-            }
+            },
+            margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
         )
     }
 
