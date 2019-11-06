@@ -36,7 +36,7 @@ plt.imsave(file_name, sinogram, cmap=plt.cm.Greys_r);
 # Extract data for plotting
 x_data = [];
 y_data = [];
-for i in range(len(theta)-1):
+for i in range(len(theta)):
 
     yd = sinogram[i, :];
     x_data.append(i);
@@ -70,21 +70,15 @@ app.layout = html.Div([
         id='radon--slider',
         min=0,
         max=179,
-        value=0,
+        value=2,
         step=1
     ),
+    html.Div(id='slider-output-container'),
+
     dcc.Graph(id='radon-transform'),
 
-    dcc.Graph(id='radon-transform-angle-view'),
+    dcc.Graph(id='radon-transform-angle-view')
 
-    dcc.Slider(
-        id='angle--slider',
-        min=0,
-        max=179,
-        value=0,
-        step=1
-    ),
-    html.Div(id='slider-output-container')
 ])
 
 # Add new trace line
@@ -94,14 +88,14 @@ app.layout = html.Div([
 )
 def update_trace_radon_transform(value):
 
+    # Plot radon transform with annnotated line
     return {
         'data': [
             go.Scatter(
                 x=(0, 1447),
                 y=(0, 179),
                 mode="markers",
-                showlegend=False,
-
+                showlegend=False
             ),
             go.Scatter(
                 x=[20],
@@ -128,9 +122,9 @@ def update_trace_radon_transform(value):
                 xref= "x",
                 yref= "y",
                 x= 0,
-                y= 180,
+                y= 179,
                 sizex= 1448,
-                sizey= 180,
+                sizey= 179,
                 sizing= "stretch",
                 opacity= 1.0,
                 visible = True,
@@ -156,7 +150,7 @@ def update_trace_radon_transform(value):
 # Display angle values
 @app.callback(
     Output('slider-output-container', 'children'),
-    [Input('angle--slider', 'value')]
+    [Input('radon--slider', 'value')],
 )
 def display_value(value):
     return 'Angle: {}'.format(value)
@@ -164,7 +158,7 @@ def display_value(value):
 # Display figure at different angle
 @app.callback(
     Output('radon-transform-angle-view', 'figure'),
-    [Input('angle--slider', 'value')]
+    [Input('radon--slider', 'value')],
 )
 
 # Update plots for sliders
