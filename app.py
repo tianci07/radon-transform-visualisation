@@ -10,7 +10,7 @@ from dash.dependencies import Input, Output
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from skimage.transform import radon
+from skimage.transform import radon, rescale
 
 import plotly.graph_objs as go
 
@@ -23,15 +23,31 @@ ap = argparse.ArgumentParser();
 ap.add_argument("-i", "--input", required=True)
 args = vars(ap.parse_args());
 
-# Create radon transform
+# Read image as grayscale
 image = cv2.imread(args["input"], 0);
+image = rescale(image, scale=0.3, mode='reflect', multichannel=False);
+
+# Pad image to square
+image_width, image_height = image.shape;
+image_shape_dif = abs(image_width-image_height);
+
+if image_width < image_height:
+    padded_image = np.pad(image, ((0,image_shape_dif),(0, 0)), 'constant', constant_values=0);
+else:
+    padded_image = np.pad(image, ((0,0),(0, image_shape_dif)), 'constant', constant_values=0);
+
+padded_image_file_name = './assets/padded-image.png';
+plt.imsave(padded_image_file_name, padded_image, cmap=plt.cm.Greys_r);
+
+# Create radon transform
 theta = np.linspace(0., 180., 180, endpoint=False);
 sinogram = radon(image, theta=theta, circle=False);
 sinogram = np.array(sinogram.T);
+sinogram_width, sinogram_height = sinogram.shape;
 
 # Save radon transform
-file_name = './assets/radon-transform.png';
-plt.imsave(file_name, sinogram, cmap=plt.cm.Greys_r);
+sinogram_file_name = './assets/radon-transform.png';
+plt.imsave(sinogram_file_name, sinogram, cmap=plt.cm.Greys_r);
 
 # Extract data for plotting
 x_data = [];
@@ -55,12 +71,12 @@ app.layout = html.Div([
         style={
             'textAlign': 'center'}
     ),
-
+    html.Hr(),
     html.Img(
-        src=args["input"],
+        src=padded_image_file_name,
         style={
-                    'height' : '50%',
-                    'width' : '50%',
+                    'height' : '30%',
+                    'width' : '30%',
                     'float' : 'top',
                     'position' : 'relative',
                     'padding-top' : 0,
@@ -92,7 +108,7 @@ def update_trace_radon_transform(value):
     return {
         'data': [
             go.Scatter(
-                x=(0, 1447),
+                x=(0, sinogram_height),
                 y=(0, 179),
                 mode="markers",
                 showlegend=False
@@ -118,12 +134,12 @@ def update_trace_radon_transform(value):
             },
             margin = dict(l=40, r=10, t=10, b=40),
             images=[dict(
-                source=file_name,
+                source=sinogram_file_name,
                 xref= "x",
                 yref= "y",
                 x= 0,
                 y= 179,
-                sizex= 1448,
+                sizex= sinogram_height,
                 sizey= 179,
                 sizing= "stretch",
                 opacity= 1.0,
@@ -136,7 +152,7 @@ def update_trace_radon_transform(value):
                 yref="y",
                 x0=0,
                 y0=179-value,
-                x1=1447,
+                x1=sinogram_height,
                 y1=179-value,
                 line=dict(
                     color="LightSeaGreen",
