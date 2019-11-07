@@ -10,7 +10,7 @@ from dash.dependencies import Input, Output
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from skimage.transform import radon, rescale
+from skimage.transform import radon, rescale, rotate
 
 import plotly.graph_objs as go
 
@@ -31,6 +31,8 @@ image = rescale(image, scale=0.3, mode='reflect', multichannel=False);
 image_width, image_height = image.shape;
 image_shape_dif = abs(image_width-image_height);
 
+# Padding on the bottom if image wdith is greater than height
+# or right if image height is greater than width.
 if image_width < image_height:
     padded_image = np.pad(image, ((0,image_shape_dif),(0, 0)), 'constant', constant_values=0);
 else:
@@ -72,18 +74,9 @@ app.layout = html.Div([
             'textAlign': 'center'}
     ),
     html.Hr(),
-    html.Img(
-        src=padded_image_file_name,
-        style={
-                    'height' : '30%',
-                    'width' : '30%',
-                    'float' : 'top',
-                    'position' : 'relative',
-                    'padding-top' : 0,
-                    'padding-right' : 0
-                }),
+
     dcc.Slider(
-        id='radon--slider',
+        id='radon-slider',
         min=0,
         max=179,
         value=2,
@@ -93,14 +86,36 @@ app.layout = html.Div([
 
     dcc.Graph(id='radon-transform'),
 
+    html.Div(id='rotated-image'),
+
     dcc.Graph(id='radon-transform-angle-view')
 
 ])
 
+# Display rotated image with slider control
+@app.callback(
+    Output('rotated-image','children'),
+    [Input('radon-slider', 'value')]
+)
+def display_rotated_image(value):
+
+    rotated_image = rotate(padded_image, value);
+    rotated_image_file_name = "./assets/rotated_image_{}.png".format(value);
+
+    plt.imsave(rotated_image_file_name, rotated_image, cmap=plt.cm.Greys_r);
+
+    return html.Img(
+        src=rotated_image_file_name,
+        style={
+                    'height' : '30%',
+                    'width' : '30%',
+                    'marginLeft': 400
+                })
+
 # Add new trace line
 @app.callback(
     Output('radon-transform', 'figure'),
-    [Input('radon--slider', 'value')],
+    [Input('radon-slider', 'value')],
 )
 def update_trace_radon_transform(value):
 
@@ -166,7 +181,7 @@ def update_trace_radon_transform(value):
 # Display angle values
 @app.callback(
     Output('slider-output-container', 'children'),
-    [Input('radon--slider', 'value')],
+    [Input('radon-slider', 'value')],
 )
 def display_value(value):
     return 'Angle: {}'.format(value)
@@ -174,7 +189,7 @@ def display_value(value):
 # Display figure at different angle
 @app.callback(
     Output('radon-transform-angle-view', 'figure'),
-    [Input('radon--slider', 'value')],
+    [Input('radon-slider', 'value')],
 )
 
 # Update plots for sliders
