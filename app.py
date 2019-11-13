@@ -103,31 +103,9 @@ app.layout = html.Div([
 
     dcc.Graph(id='radon-transform'),
 
-    # html.Div(id='rotated-image'),
-
     dcc.Graph(id='radon-transform-angle-view')
 
 ])
-
-# Display rotated image with slider control
-# @app.callback(
-#     Output('rotated-image','children'),
-#     [Input('radon-slider', 'value')]
-# )
-# def display_rotated_image(value):
-#
-#     rotated_image = rotate(padded_image, value);
-#     rotated_image_file_name = "./assets/rotated_image_{}.png".format(value);
-#
-#     plt.imsave(rotated_image_file_name, rotated_image, cmap=plt.cm.Greys_r);
-#
-#     return html.Img(
-#         src=rotated_image_file_name,
-#         style={
-#                     'height' : '30%',
-#                     'width' : '30%',
-#                     'marginLeft': 400
-#                 })
 
 # Add new trace line
 @app.callback(
