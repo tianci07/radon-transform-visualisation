@@ -30,16 +30,26 @@ image = rescale(image, scale=0.3, mode='reflect', multichannel=False);
 # Pad image to square
 image_width, image_height = image.shape;
 image_shape_dif = abs(image_width-image_height);
+image_shape_dif_first_half = int(image_shape_dif/2);
+image_shape_dif_second_half = image_shape_dif-image_shape_dif_first_half;
 
-# Padding on the bottom if image wdith is greater than height
-# or right if image height is greater than width.
+# Padding on the (top, bottom) if image wdith is greater than height
+# or (left, right) if image height is greater than width.
 if image_width < image_height:
-    padded_image = np.pad(image, ((0,image_shape_dif),(0, 0)), 'constant', constant_values=0);
+    padded_image = np.pad(image,
+                        ((image_shape_dif_first_half,image_shape_dif_second_half),(0, 0)),
+                        'constant',
+                        constant_values=0);
 else:
-    padded_image = np.pad(image, ((0,0),(0, image_shape_dif)), 'constant', constant_values=0);
+    padded_image = np.pad(image,
+                        ((0,0),(image_shape_dif_first_half,image_shape_dif_second_half)),
+                        'constant',
+                        constant_values=0);
 
 padded_image_file_name = './assets/padded-image.png';
 plt.imsave(padded_image_file_name, padded_image, cmap=plt.cm.Greys_r);
+
+padded_image_width, padded_image_height = padded_image.shape;
 
 # Create radon transform
 theta = np.linspace(0., 180., 180, endpoint=False);
@@ -75,6 +85,13 @@ app.layout = html.Div([
     ),
     html.Hr(),
 
+    html.Div(
+        children='Use the slider to change the view of radon transform at different angle.',
+        style={
+            'textAlign': 'left'}
+    ),
+    html.Hr(),
+
     dcc.Slider(
         id='radon-slider',
         min=0,
@@ -86,31 +103,31 @@ app.layout = html.Div([
 
     dcc.Graph(id='radon-transform'),
 
-    html.Div(id='rotated-image'),
+    # html.Div(id='rotated-image'),
 
     dcc.Graph(id='radon-transform-angle-view')
 
 ])
 
 # Display rotated image with slider control
-@app.callback(
-    Output('rotated-image','children'),
-    [Input('radon-slider', 'value')]
-)
-def display_rotated_image(value):
-
-    rotated_image = rotate(padded_image, value);
-    rotated_image_file_name = "./assets/rotated_image_{}.png".format(value);
-
-    plt.imsave(rotated_image_file_name, rotated_image, cmap=plt.cm.Greys_r);
-
-    return html.Img(
-        src=rotated_image_file_name,
-        style={
-                    'height' : '30%',
-                    'width' : '30%',
-                    'marginLeft': 400
-                })
+# @app.callback(
+#     Output('rotated-image','children'),
+#     [Input('radon-slider', 'value')]
+# )
+# def display_rotated_image(value):
+#
+#     rotated_image = rotate(padded_image, value);
+#     rotated_image_file_name = "./assets/rotated_image_{}.png".format(value);
+#
+#     plt.imsave(rotated_image_file_name, rotated_image, cmap=plt.cm.Greys_r);
+#
+#     return html.Img(
+#         src=rotated_image_file_name,
+#         style={
+#                     'height' : '30%',
+#                     'width' : '30%',
+#                     'marginLeft': 400
+#                 })
 
 # Add new trace line
 @app.callback(
@@ -193,12 +210,23 @@ def display_value(value):
 )
 
 # Update plots for sliders
-def update_graph(value):
+def display_image_and_update_graph(value):
+
+    rotated_image = rotate(padded_image, value);
+    rotated_image_file_name = "./assets/rotated_image_{}.png".format(value);
+
+    plt.imsave(rotated_image_file_name, rotated_image, cmap=plt.cm.Greys_r);
+
+    yd = y_data[value];
+    max_yd = np.amax(yd);
+
+    x_min = int(sinogram_height/2-padded_image_width/2);
+    x_max = padded_image_width;
 
     return {
         'data': [
             go.Scatter(
-                y=y_data[value]
+                y=yd
 
             )
         ],
@@ -210,6 +238,19 @@ def update_graph(value):
                 'title': 'Pixel values'
             },
             margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            images=[dict(
+                source=rotated_image_file_name,
+                xref= "x",
+                yref= "y",
+                x= x_min,
+                y= max_yd,
+                sizex= x_max,
+                sizey= max_yd,
+                sizing= "stretch",
+                opacity= 1.0,
+                visible = True,
+                layer= "below")],
+            template="plotly_white"
         )
     }
 
