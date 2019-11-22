@@ -96,7 +96,7 @@ app.layout = html.Div([
         id='radon-slider',
         min=0,
         max=179,
-        value=2,
+        value=0,
         step=1
     ),
     html.Div(id='slider-output-container'),
@@ -190,7 +190,7 @@ def display_value(value):
 # Update plots for sliders
 def display_image_and_update_graph(value):
 
-    rotated_image = rotate(padded_image, value);
+    rotated_image = rotate(padded_image, -value);
     rotated_image_file_name = "./assets/rotated_image_{}.png".format(value);
 
     plt.imsave(rotated_image_file_name, rotated_image, cmap=plt.cm.Greys_r);
