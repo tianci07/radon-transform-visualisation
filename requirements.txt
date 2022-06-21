@@ -1,7 +1,7 @@
 python==3.6.8
 dash==1.4.1 # web application
 dash-daq==0.2.1
-numpy==1.16.2
+numpy==1.22.0
 scikit-image==0.14.2 # radon transform
 plotly==4.2.1
 opencv==4.1.0 # processing input images
