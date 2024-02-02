@@ -1,5 +1,5 @@
 python==3.6.8
-dash==1.4.1 # web application
+dash==2.15.0 # web application
 dash-daq==0.2.1
 numpy==1.16.2
 scikit-image==0.14.2 # radon transform
